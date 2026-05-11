@@ -1,4 +1,4 @@
-import { FileText, Folder, LayoutGrid, List } from "lucide-react";
+import { Copy, FileText, Folder, LayoutGrid, List } from "lucide-react";
 import type { AppSettings, FileNode, SelectedFolder } from "../types";
 import { formatDate, sortNodes } from "../lib/fileTree";
 
@@ -65,6 +65,16 @@ export function FolderView({
         <div>
           <p>폴더</p>
           <h1>{selectedFolder.title}</h1>
+          <div className="folder-path-line">
+            <button
+              className="path-copy-button"
+              title="절대 경로 복사"
+              onClick={() => void window.karma.copyText(selectedFolder.path)}
+            >
+              <Copy size={14} />
+            </button>
+            <span>{selectedFolder.path}</span>
+          </div>
         </div>
         <div className="segmented">
           <button

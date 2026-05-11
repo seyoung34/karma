@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from "electron";
+import { clipboard, contextBridge, ipcRenderer } from "electron";
 import type { AppSettings, MarkdownFile, WorkspaceSnapshot } from "./types.js";
 
 const api = {
@@ -18,7 +18,11 @@ const api = {
   },
   windowMinimize: (): Promise<void> => ipcRenderer.invoke("window:minimize"),
   windowMaximize: (): Promise<void> => ipcRenderer.invoke("window:maximize"),
-  windowClose: (): Promise<void> => ipcRenderer.invoke("window:close")
+  windowClose: (): Promise<void> => ipcRenderer.invoke("window:close"),
+  copyText: (text: string): Promise<void> => {
+    clipboard.writeText(text);
+    return Promise.resolve();
+  }
 };
 
 contextBridge.exposeInMainWorld("karma", api);

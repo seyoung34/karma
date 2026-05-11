@@ -709,6 +709,33 @@ button {
   white-space: nowrap;
 }
 
+.document-meta-main,
+.folder-path-line {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 7px;
+}
+
+.path-copy-button {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+}
+
+.path-copy-button:hover,
+.path-copy-button:focus-visible {
+  border-color: var(--line-soft);
+  background: var(--surface-2);
+  color: var(--text);
+}
+
 .document-meta-name {
   max-width: 220px;
   overflow: hidden;
@@ -814,6 +841,20 @@ button {
 .home-empty h1 {
   margin: 0;
   font-size: 28px;
+}
+
+.folder-path-line {
+  max-width: min(720px, 58vw);
+  margin-top: 10px;
+  color: var(--faint);
+  font-size: 12px;
+}
+
+.folder-path-line span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .segmented {

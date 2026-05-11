@@ -101,6 +101,7 @@ export type KarmaApi = {
   windowMinimize: () => Promise<void>;
   windowMaximize: () => Promise<void>;
   windowClose: () => Promise<void>;
+  copyText: (text: string) => Promise<void>;
 };
 
 declare global {
