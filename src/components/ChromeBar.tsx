@@ -4,7 +4,6 @@ import {
   Copy,
   FileText,
   Folder,
-  FolderOpen,
   Home,
   Minus,
   PanelLeftClose,
@@ -14,7 +13,6 @@ import {
   Plus,
   Search,
   Settings,
-  Star,
   X
 } from "lucide-react";
 import type { AppSettings, Tab } from "../types";
@@ -25,7 +23,7 @@ export function ChromeBar({
   tabs,
   activeTab,
   activeTabId,
-  onOpenFolder,
+  onOpenCommandPalette,
   onOpenSettings,
   onToggleSidebar,
   onToggleRightPanel,
@@ -40,7 +38,7 @@ export function ChromeBar({
   tabs: Tab[];
   activeTab?: Tab;
   activeTabId: string;
-  onOpenFolder: () => void;
+  onOpenCommandPalette: () => void;
   onOpenSettings: () => void;
   onToggleSidebar: () => void;
   onToggleRightPanel: () => void;
@@ -55,15 +53,13 @@ export function ChromeBar({
     <header className="chrome-bar">
       <nav className="rail">
         <IconButton title="홈"><Home size={17} /></IconButton>
-        <IconButton title="폴더 열기" onClick={onOpenFolder}><FolderOpen size={17} /></IconButton>
-        <IconButton title="검색"><Search size={17} /></IconButton>
-        <IconButton title="즐겨찾기"><Star size={17} /></IconButton>
+        <IconButton title="검색" onClick={onOpenCommandPalette}><Search size={17} /></IconButton>
         <IconButton title="설정" onClick={onOpenSettings}><Settings size={17} /></IconButton>
       </nav>
 
       <div className="chrome-main">
         <div className="chrome-actions">
-          <IconButton title={settings.sidebarCollapsed ? "좌측 패널 열기" : "좌측 패널 닫기"} onClick={onToggleSidebar}>
+          <IconButton title={settings.sidebarCollapsed ? "사이드바 열기" : "사이드바 닫기"} onClick={onToggleSidebar}>
             {settings.sidebarCollapsed ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}
           </IconButton>
           <IconButton title="뒤로" onClick={onBack} disabled={!activeTab || activeTab.historyIndex === 0}>
@@ -91,7 +87,7 @@ export function ChromeBar({
         </div>
 
         <div className="window-tools">
-          <IconButton title={settings.rightPanelCollapsed ? "우측 패널 열기" : "우측 패널 닫기"} onClick={onToggleRightPanel}>
+          <IconButton title={settings.rightPanelCollapsed ? "오른쪽 패널 열기" : "오른쪽 패널 닫기"} onClick={onToggleRightPanel}>
             {settings.rightPanelCollapsed ? <PanelRightOpen size={17} /> : <PanelRightClose size={17} />}
           </IconButton>
           <IconButton title="최소화" onClick={() => void window.karma.windowMinimize()}><Minus size={17} /></IconButton>

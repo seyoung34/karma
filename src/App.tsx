@@ -872,7 +872,7 @@ export default function App() {
         tabs={tabs}
         activeTab={activeTab}
         activeTabId={activeTabId}
-        onOpenFolder={openFolder}
+        onOpenCommandPalette={() => setCommandPaletteOpen(true)}
         onOpenSettings={() => setSettingsOpen(true)}
         onToggleSidebar={() => updateSettings((current) => ({ ...current, sidebarCollapsed: !current.sidebarCollapsed }))}
         onToggleRightPanel={() => updateSettings((current) => ({ ...current, rightPanelCollapsed: !current.rightPanelCollapsed }))}
