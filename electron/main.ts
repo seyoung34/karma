@@ -64,11 +64,18 @@ function createWindow() {
     }
   });
 
+  win.webContents.on("did-fail-load", (_event, errorCode, errorDescription, validatedURL) => {
+    console.error("Renderer failed to load", { errorCode, errorDescription, validatedURL });
+  });
+
   if (process.env.VITE_DEV_SERVER_URL) {
     void win.loadURL(process.env.VITE_DEV_SERVER_URL);
     win.webContents.openDevTools({ mode: "detach" });
   } else {
-    void win.loadFile(path.join(__dirname, "../dist/index.html"));
+    const indexPath = app.isPackaged
+      ? path.join(process.resourcesPath, "app.asar", "dist", "index.html")
+      : path.join(__dirname, "../dist/index.html");
+    void win.loadFile(indexPath);
   }
 }
 

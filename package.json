@@ -1,6 +1,6 @@
 {
   "name": "karma",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "A personal desktop workspace for reading Obsidian vaults.",
   "main": "dist-electron/main.js",
@@ -16,7 +16,7 @@
     "appId": "com.karma.desktop",
     "productName": "Karma",
     "directories": {
-      "output": "release-build"
+      "output": "release-build-v0.1.1-fixed"
     },
     "files": [
       "dist/**",

@@ -7,6 +7,9 @@ dist-electron/
 out/
 release/
 release-build/
+release-build-fixed/
+release-build-v0.1.1/
+release-build-v0.1.1-fixed/
 
 # local app/runtime state
 settings.json
