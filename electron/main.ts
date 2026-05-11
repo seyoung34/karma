@@ -24,6 +24,7 @@ const defaultSettings: AppSettings = {
   sidebarCollapsed: false,
   rightPanelCollapsed: false,
   folderViewMode: "cards",
+  documentWidth: "wide",
   folderSorts: {},
   customOrder: {},
   hiddenPaths: [],

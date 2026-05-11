@@ -1,3 +1,22 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-chrome: var(--chrome);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-line: var(--line);
+  --color-line-soft: var(--line-soft);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-accent: var(--accent);
+  --color-accent-2: var(--accent-2);
+  --color-danger: var(--danger);
+  --font-sans: "Aptos", "Segoe UI", "Pretendard", sans-serif;
+}
+
 :root {
   color-scheme: dark;
   --bg: #171717;
@@ -223,10 +242,15 @@ button {
 }
 
 .rail-action:hover,
-.rail-entry:hover,
-.rail-entry.active {
+.rail-entry:hover {
   background: var(--surface-3);
   color: var(--text);
+}
+
+.rail-entry:hover,
+.rail-entry.active {
+  background: color-mix(in srgb, var(--rail-bg, var(--surface-2)) 72%, var(--surface-3));
+  color: var(--rail-fg, var(--text));
 }
 
 .rail-action:focus-visible,
@@ -248,28 +272,43 @@ button {
 }
 
 .rail-color-slate {
-  background: var(--surface-2);
-  color: var(--text);
+  --rail-bg: var(--surface-2);
+  --rail-fg: var(--text);
+  --rail-dot: #a1a1aa;
+  background: var(--rail-bg);
+  color: var(--rail-fg);
 }
 
 .rail-color-blue {
-  background: color-mix(in srgb, #2f7df6 28%, var(--surface-2));
-  color: #dbeafe;
+  --rail-bg: color-mix(in srgb, #2f7df6 32%, var(--surface-2));
+  --rail-fg: #dbeafe;
+  --rail-dot: #6aa2ff;
+  background: var(--rail-bg);
+  color: var(--rail-fg);
 }
 
 .rail-color-green {
-  background: color-mix(in srgb, #22c55e 26%, var(--surface-2));
-  color: #dcfce7;
+  --rail-bg: color-mix(in srgb, #22c55e 30%, var(--surface-2));
+  --rail-fg: #dcfce7;
+  --rail-dot: #86efac;
+  background: var(--rail-bg);
+  color: var(--rail-fg);
 }
 
 .rail-color-pink {
-  background: color-mix(in srgb, #e879f9 25%, var(--surface-2));
-  color: #fae8ff;
+  --rail-bg: color-mix(in srgb, #e879f9 30%, var(--surface-2));
+  --rail-fg: #fae8ff;
+  --rail-dot: #f0abfc;
+  background: var(--rail-bg);
+  color: var(--rail-fg);
 }
 
 .rail-color-orange {
-  background: color-mix(in srgb, #f59e0b 28%, var(--surface-2));
-  color: #ffedd5;
+  --rail-bg: color-mix(in srgb, #f59e0b 32%, var(--surface-2));
+  --rail-fg: #ffedd5;
+  --rail-dot: #fbbf24;
+  background: var(--rail-bg);
+  color: var(--rail-fg);
 }
 
 .rail-action.primary {
@@ -360,14 +399,22 @@ button {
   height: 28px;
   place-items: center;
   padding: 0;
+  background: transparent;
+  color: var(--rail-dot);
   text-align: center;
+}
+
+.rail-context-menu .rail-color-choice:hover,
+.rail-context-menu .rail-color-choice:focus-visible {
+  background: color-mix(in srgb, var(--rail-dot) 16%, var(--surface-2));
+  color: var(--rail-dot);
 }
 
 .rail-color-choice span {
   width: 15px;
   height: 15px;
   border-radius: 999px;
-  background: currentColor;
+  background: var(--rail-dot);
 }
 
 .rail-color-choice.active {
@@ -578,6 +625,7 @@ button {
 }
 
 .center {
+  position: relative;
   min-width: 0;
   min-height: 0;
   overflow: hidden;
@@ -610,6 +658,22 @@ button {
   max-width: 900px;
   margin: 0 auto;
   padding: 54px 64px 80px;
+}
+
+.document-width-narrow {
+  max-width: 760px;
+}
+
+.document-width-comfortable {
+  max-width: 900px;
+}
+
+.document-width-wide {
+  max-width: 1160px;
+}
+
+.document-width-full {
+  max-width: none;
 }
 
 .document-meta {

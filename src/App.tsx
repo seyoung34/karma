@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChromeBar } from "./components/ChromeBar";
+import { CommandPalette } from "./components/CommandPalette";
 import { ConfirmModal } from "./components/ConfirmModal";
 import { ContextMenu } from "./components/ContextMenu";
 import { DocumentView } from "./components/DocumentView";
@@ -13,7 +14,8 @@ import { defaultSettings, defaultShortcuts, defaultSort, rootFolderKey } from ".
 import { collectNodes, countMarkdown, getFolderSort, sortLabel, sortNodes } from "./lib/fileTree";
 import { basenameWithoutExtension, linkCandidates, normalizeLinkName, safeDecode } from "./lib/markdown";
 import { eventToShortcut } from "./lib/shortcuts";
-import type { ActionId, AppSettings, FileNode, HighlightColor, RailItemSettings, SelectedFolder, SortMode, Tab, WorkspaceSnapshot } from "./types";
+import type { ActionId, AppSettings, DocumentWidth, FileNode, HighlightColor, RailItemSettings, SelectedFolder, SortMode, Tab, WorkspaceSnapshot } from "./types";
+import type { CommandPaletteItem } from "./components/CommandPalette";
 
 type DragState = {
   path: string;
@@ -40,6 +42,13 @@ type ConfirmState = {
 };
 
 type PersistedShortcutValue = string | string[] | undefined;
+
+const documentWidthOptions: Array<{ value: DocumentWidth; label: string }> = [
+  { value: "narrow", label: "좁게" },
+  { value: "comfortable", label: "기본" },
+  { value: "wide", label: "넓게" },
+  { value: "full", label: "전체" }
+];
 
 function normalizeShortcut(value: PersistedShortcutValue, fallback: string) {
   if (Array.isArray(value)) return value[0] ?? fallback;
@@ -69,6 +78,7 @@ function mergeSettings(loaded: AppSettings): AppSettings {
     favoritePaths: loaded.favoritePaths ?? [],
     railItems: loaded.railItems ?? {},
     showHidden: loaded.showHidden ?? false,
+    documentWidth: loaded.documentWidth ?? defaultSettings.documentWidth,
     shortcuts
   };
 }
@@ -89,6 +99,15 @@ function isPathInside(path: string, root: string) {
   return path === root || path.startsWith(`${root}\\`) || path.startsWith(`${root}/`);
 }
 
+function labelFromPath(path: string) {
+  const parts = path.split(/[\\/]/).filter(Boolean);
+  return parts[parts.length - 1] ?? path;
+}
+
+function commandKeywords(...values: Array<string | undefined>) {
+  return values.filter(Boolean).join(" ").toLowerCase();
+}
+
 export default function App() {
   const [settings, setSettings] = useState<AppSettings>(defaultSettings);
   const [settingsLoaded, setSettingsLoaded] = useState(false);
@@ -106,6 +125,8 @@ export default function App() {
   const [centerFocused, setCenterFocused] = useState(false);
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
   const [confirmState, setConfirmState] = useState<ConfirmState | null>(null);
+  const [centerOptionsOpen, setCenterOptionsOpen] = useState(false);
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [recordingAction, setRecordingAction] = useState<ActionId | null>(null);
   const centerRef = useRef<HTMLElement>(null);
@@ -228,7 +249,7 @@ export default function App() {
   const scrollCenterByPage = useCallback((direction: -1 | 1) => {
     const scrollTarget = centerRef.current?.querySelector<HTMLElement>(".document, .folder-view, .home-empty, .blank-tab-view");
     scrollTarget?.scrollBy({
-      top: direction * scrollTarget.clientHeight * 0.85,
+      top: direction * scrollTarget.clientHeight * 0.65,
       behavior: "smooth"
     });
   }, []);
@@ -722,6 +743,86 @@ export default function App() {
     if (action === "settings") setSettingsOpen(true);
   }, [activeTabId, closeTab, moveTab, navigateHistory, openFolder, updateSettings]);
 
+  const commandPaletteItems = useMemo<CommandPaletteItem[]>(() => {
+    const items: CommandPaletteItem[] = [];
+    const workspacePaths = Array.from(new Set([rootPath, ...settings.workspaceRoots].filter(Boolean)));
+
+    workspacePaths.forEach((path) => {
+      const title = path === rootPath ? rootTitle : labelFromPath(path);
+      items.push({
+        id: `workspace:${path}`,
+        title,
+        subtitle: path,
+        type: "workspace",
+        keywords: commandKeywords(title, path, "workspace root"),
+        run: () => {
+          void openRootPath(path);
+        }
+      });
+    });
+
+    settings.favoritePaths.forEach((path) => {
+      const title = settings.railItems[path]?.label?.trim() || labelFromPath(path);
+      items.push({
+        id: `favorite:${path}`,
+        title,
+        subtitle: path,
+        type: "favorite",
+        keywords: commandKeywords(title, path, "favorite folder"),
+        run: (options) => {
+          void openFavoritePath(path, options);
+        }
+      });
+    });
+
+    tabs.forEach((tab) => {
+      const path = tab.file?.path ?? tab.folder?.path;
+      items.push({
+        id: `tab:${tab.id}`,
+        title: tab.title,
+        subtitle: path ? `열린 탭 · ${path}` : "열린 탭",
+        type: "tab",
+        keywords: commandKeywords(tab.title, path, "tab"),
+        run: () => {
+          setActiveTabId(tab.id);
+          setSelectedFolder(tab.folder ?? null);
+        }
+      });
+    });
+
+    sidebarVisiblePaths.forEach((path) => {
+      const node = nodeMap.get(path);
+      if (!node) return;
+      const type = node.type === "folder" ? "folder" : "file";
+      items.push({
+        id: `sidebar:${path}`,
+        title: node.title,
+        subtitle: node.relativePath || node.path,
+        type,
+        keywords: commandKeywords(node.title, node.name, node.relativePath, node.path, type),
+        run: (options) => {
+          if (node.type === "folder") selectFolder(node, options);
+          else void openFile(node, options);
+        }
+      });
+    });
+
+    return items;
+  }, [
+    nodeMap,
+    openFavoritePath,
+    openFile,
+    openRootPath,
+    rootPath,
+    rootTitle,
+    selectFolder,
+    settings.favoritePaths,
+    settings.railItems,
+    settings.workspaceRoots,
+    sidebarVisiblePaths,
+    tabs
+  ]);
+
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (recordingAction) {
@@ -737,6 +838,21 @@ export default function App() {
         return;
       }
 
+      if ((event.ctrlKey || event.metaKey) && !event.shiftKey && !event.altKey && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        setCommandPaletteOpen((open) => !open);
+        return;
+      }
+
+      if ((event.ctrlKey || event.metaKey) && !event.shiftKey && !event.altKey && event.key.toLowerCase() === "p") {
+        event.preventDefault();
+        setCommandPaletteOpen(false);
+        setSettingsOpen(false);
+        setCenterOptionsOpen(false);
+        focusCenter();
+        return;
+      }
+
       const shortcut = eventToShortcut(event);
       const action = (Object.entries(settings.shortcuts) as Array<[ActionId, string]>).find(([, value]) => value === shortcut)?.[0];
       if (!action) return;
@@ -745,7 +861,7 @@ export default function App() {
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [recordingAction, runAction, setShortcut, settings.shortcuts]);
+  }, [focusCenter, recordingAction, runAction, setShortcut, settings.shortcuts]);
 
   const currentSort = getFolderSort(settings, selectedFolder?.path ?? rootKey);
 
@@ -852,6 +968,40 @@ export default function App() {
             }
           }}
         >
+          <div className="absolute right-3 top-3 z-10">
+            <button
+              className="grid size-8 place-items-center rounded-md text-muted hover:bg-surface-2 hover:text-text focus-visible:outline focus-visible:outline-1 focus-visible:outline-accent"
+              title="중앙 화면 설정"
+              onClick={(event) => {
+                event.stopPropagation();
+                setCenterOptionsOpen((open) => !open);
+              }}
+            >
+              ...
+            </button>
+            {centerOptionsOpen && (
+              <div className="absolute right-0 top-10 w-40 rounded-lg border border-line bg-surface p-1 shadow-[0_18px_45px_rgb(0_0_0/0.4)]">
+                <div className="px-2 py-1.5 text-xs text-faint">문서 폭</div>
+                {documentWidthOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    className={`flex h-8 w-full items-center justify-between rounded-md px-2 text-left text-sm ${
+                      settings.documentWidth === option.value ? "bg-surface-3 text-text" : "text-muted hover:bg-surface-2 hover:text-text"
+                    }`}
+                    onClick={() => {
+                      updateSettings((current) => ({ ...current, documentWidth: option.value }));
+                      setCenterOptionsOpen(false);
+                      focusCenter();
+                    }}
+                  >
+                    <span>{option.label}</span>
+                    {settings.documentWidth === option.value && <span className="text-accent">✓</span>}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           {selectedFolder ? (
             <FolderView
               selectedFolder={selectedFolder}
@@ -861,7 +1011,7 @@ export default function App() {
               onSelectFolder={selectFolder}
             />
           ) : activeTab?.file ? (
-            <DocumentView file={activeTab.file} onWikiLink={openWikiLink} />
+            <DocumentView file={activeTab.file} width={settings.documentWidth} onWikiLink={openWikiLink} />
           ) : activeTab ? (
             <BlankTabView />
           ) : (
@@ -900,6 +1050,13 @@ export default function App() {
           recordingAction={recordingAction}
           onRecord={setRecordingAction}
           onClose={() => setSettingsOpen(false)}
+        />
+      )}
+
+      {commandPaletteOpen && (
+        <CommandPalette
+          items={commandPaletteItems}
+          onClose={() => setCommandPaletteOpen(false)}
         />
       )}
 

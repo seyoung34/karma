@@ -1,15 +1,17 @@
-import type { MarkdownFile } from "../types";
+import type { DocumentWidth, MarkdownFile } from "../types";
 import { renderMarkdown } from "../lib/markdown";
 
 export function DocumentView({
   file,
+  width,
   onWikiLink
 }: {
   file: MarkdownFile;
+  width: DocumentWidth;
   onWikiLink: (target: string, newTab: boolean) => void;
 }) {
   return (
-    <article className="document">
+    <article className={`document document-width-${width}`}>
       <div className="document-meta">
         <span>{file.relativePath}</span>
         <span>{file.extension}</span>

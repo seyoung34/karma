@@ -28,6 +28,7 @@ export type AppSettings = {
   sidebarCollapsed: boolean;
   rightPanelCollapsed: boolean;
   folderViewMode: "cards" | "list";
+  documentWidth: DocumentWidth;
   folderSorts: Record<string, FolderSortSetting>;
   customOrder: Record<string, string[]>;
   hiddenPaths: string[];
@@ -42,6 +43,8 @@ export type AppSettings = {
 export type SortMode = "custom" | "name" | "modified" | "created";
 
 export type SortDirection = "asc" | "desc";
+
+export type DocumentWidth = "narrow" | "comfortable" | "wide" | "full";
 
 export type HighlightColor = "yellow" | "blue" | "green" | "pink" | "orange";
 
