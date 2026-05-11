@@ -13,8 +13,8 @@ export function DocumentView({
   return (
     <article className={`document document-width-${width}`}>
       <div className="document-meta">
-        <span>{file.relativePath}</span>
-        <span>{file.extension}</span>
+        <span className="document-meta-path">{file.relativePath}</span>
+        <span className="document-meta-name">{file.path.split(/[\\/]/).pop() ?? file.extension}</span>
       </div>
       <h1>{file.title}</h1>
       <div
